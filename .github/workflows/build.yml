@@ -26,10 +26,17 @@ jobs:
           mkdir -p $THEOS/sdks
           cp -r /tmp/sdks/iPhoneOS9.3.sdk $THEOS/sdks/
 
+      - name: Fix module.map names in old SDK
+        run: |
+          find $THEOS/sdks/iPhoneOS9.3.sdk -name "module.map" -print0 | \
+            while IFS= read -r -d '' f; do
+              mv "$f" "$(dirname "$f")/module.modulemap"
+            done
+
       - name: Build package
         run: |
           make clean
-          make package SDKVERSION=9.3 ARCHS=armv7 ADDITIONAL_CFLAGS="-fno-modules"
+          make package SDKVERSION=9.3 ARCHS=armv7
         env:
           THEOS: ${{ env.THEOS }}
 
