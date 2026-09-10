@@ -3,7 +3,7 @@ name: Build SimulateTouch DEB
 on:
   push:
     branches: [ master, main ]
-  workflow_dispatch:   # Permite ejecutarlo manualmente desde la pestaña Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,19 +20,18 @@ jobs:
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
           echo "$HOME/theos/bin" >> $GITHUB_PATH
 
-      # Opcional: descargar un SDK antiguo si el proyecto lo necesita
-      # - name: Install old SDK
-      #   run: |
-      #     git clone https://github.com/theos/sdks.git /tmp/sdks
-      #     cp -r /tmp/sdks/iPhoneOS9.3.sdk $THEOS/sdks/
+      - name: Install old iOS SDK
+        run: |
+          git clone --depth 1 https://github.com/theos/sdks.git /tmp/sdks
+          mkdir -p $THEOS/sdks
+          cp -r /tmp/sdks/iPhoneOS9.3.sdk $THEOS/sdks/
 
       - name: Build package
         run: |
           make clean
-          make package
+          make package SDKVERSION=9.3 ARCHS=armv7 ADDITIONAL_CFLAGS="-fno-modules"
         env:
           THEOS: ${{ env.THEOS }}
-          ARCHS: armv7   # El proyecto original es de 32 bits (armv7)
 
       - name: Upload DEB
         uses: actions/upload-artifact@v4
